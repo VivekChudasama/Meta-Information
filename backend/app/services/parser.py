@@ -96,9 +96,7 @@ def parse_docx_to_markdown(filepath: str) -> str:
 
     extracted_md = ""
 
-    extracted_md += "=" * 60 + "\n"
-    extracted_md += "📄  SECTION 1 — FIRST PAGE CONTENT\n"
-    extracted_md += "=" * 60 + "\n"
+    extracted_md += "FIRST PAGE CONTENT\n"
 
     xml_blocks = get_xml_blocks_with_pages(filepath)
     xml_blocks_norm = [(p, normalize_text(b)) for p, b in xml_blocks]
@@ -153,9 +151,7 @@ def parse_docx_to_markdown(filepath: str) -> str:
         extracted_md += format_element(element, level, text)
 
 
-    extracted_md += "\n\n" + "=" * 60 + "\n"
-    extracted_md += "📑  SECTION 2 — HEADINGS (H1, H2, H3 ONLY)\n"
-    extracted_md += "=" * 60 + "\n"
+    extracted_md += "HEADINGS \n"
 
     headings = []
 
@@ -169,11 +165,6 @@ def parse_docx_to_markdown(filepath: str) -> str:
 
     if not headings:
         extracted_md += "⚠️  No H1, H2, or H3 headings detected.\n"
-
-
-    extracted_md += "\n\n" + "=" * 60 + "\n"
-    extracted_md += "📝  SECTION 3 — CONCLUSION SECTION\n"
-    extracted_md += "=" * 60 + "\n"
 
     sections = []
     current = {"heading": None, "level": 0, "content": []}

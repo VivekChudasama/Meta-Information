@@ -2,18 +2,13 @@ import os
 import shutil
 import tempfile
 from fastapi import APIRouter, File, UploadFile, HTTPException
-from pydantic import BaseModel
 
 from app.services.parser import parse_docx_to_markdown
 from app.services.ai_generator import generate_seo_metadata, SEOMetadata
 
 router = APIRouter(tags=["generation"])
 
-class UploadResponse(BaseModel):
-    filename: str
-    metadata: SEOMetadata
-
-@router.post("/generate-metadata", response_model=UploadResponse)
+@router.post("/generate-metadata", response_model=SEOMetadata)
 async def generate_metadata(file: UploadFile = File(...)):
     """
     Receives an uploaded .docx file, parses and extracts content using Docling,
@@ -37,10 +32,7 @@ async def generate_metadata(file: UploadFile = File(...)):
         # 3. Feed the markdown to the Langchain + Groq AI generator
         metadata = generate_seo_metadata(parsed_markdown)
         
-        return UploadResponse(
-            filename=file.filename,
-            metadata=metadata
-        )
+        return metadata
         
     except Exception as e:
         print(f"Error processing file: {e}")
