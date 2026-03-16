@@ -2,6 +2,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field
 import json
+import re
 from app.core.config import settings
 
 
@@ -34,23 +35,33 @@ def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
     # Configure the schema output via Prompt Instructions
     prompt = PromptTemplate.from_template(
         """ 
-            System: Technical SEO Specialist
-            Task: Generate strictly valid JSON metadata for the <document>. 
-            Audience: Devs & Tech Leads
-            Tone: Clear, benefit-focused
+            System: You are an expert SEO & Conversion Copywriter.
+            Audience: Devs, founders, product managers, or non-technical readers
+
+            Task: Analyze the provided document and generate highly clickable SEO metadata and URL slugs.
 
             Rules:
-            - Output ONLY raw JSON.
-            - Title: 50-60 chars. [Primary Keyword] + Guide/Explained (Only add the Current Year if it is strictly necessary/relevant to the content).
-            - Description: 150-160 chars. Flow: [Problem solved] -> [Target audience] -> [Key outcome].
-            - Routes: 3-5 slugs from H2/H3. Lowercase-hyphenated, keyword variants.
+            1. META TITLE ( 50-60 chars):
+            - Format: [Primary Keyword] + [Hook/Value]: [Benefit]
+            - Must sound natural, punchy, and click-worthy.
 
-            JSON Schema:
+            2. META DESCRIPTION ( 150-160 chars):
+            - Format: [Pain/Question Hook ?] [Audience] get [Specific Solution/Promise] to [CTA/Benefit].
+            - Hook the reader with a pain point or question first.
+            - Action-oriented language.
+
+            3. URL ROUTES (3-5 slugs):
+            - Extract from core H2/H3 topics. Strictly lowercase-hyphenated.
+
+            Output Constraints:
+            - Output ONLY valid JSON and no explanations.
+            Schema:
             {{
-            "seo_title": "string",
-            "seo_description": "string",
-            "url_routes": ["string"]
+                "seo_title": "string",
+                "seo_description": "string",
+                "url_routes": ["string"]
             }}
+
             <document>
             {content}
             </document>
@@ -65,12 +76,10 @@ def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
     result = chain.invoke({"content": content_to_process})
 
     try:
-        # Groq might return with markdown ```json ... ```, strip it just in case
+        # Strip any markdown code fences (```json ... ```, ``` ... ```, etc.)
         content = result.content.strip()
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.endswith("```"):
-            content = content[:-3]
+        content = re.sub(r'^```\w*\s*', '', content)
+        content = re.sub(r'\s*```$', '', content)
 
         parsed_json = json.loads(content.strip())
         return SEOMetadata(**parsed_json)

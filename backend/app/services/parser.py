@@ -39,7 +39,7 @@ class LLMContextOptimizer:
             r"(?i)has (many|numerous|several|various) (applications|uses).*",
         ]
 
-        # Boilerplate sections to skip entirely (case-insensitive matching)
+        # Boilerplate sections to skip entirely 
         self.skip_sections = {
             "acknowledgments",
             "acknowledgements",
