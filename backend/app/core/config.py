@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "SEO Metadata Generator API"
     API_V1_STR: str = "/api/v1"
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    # GROQ_MODEL: str = "openai/gpt-oss-120b"
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
+    # GROQ_MODEL: str = "llama-3.3-70b-versatile"
 
 
 settings = Settings()
