@@ -35,86 +35,93 @@ def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
         model_kwargs={"top_p": 0.9},
     )
 
+    # By using structured output with method="json_mode" we force the model to
+    # output strict JSON instead of spending tokens reasoning or chatting.
+    structured_llm = llm.with_structured_output(SEOMetadata, method="json_mode")
+
     # Configure the schema output via Prompt Instructions
     prompt = PromptTemplate.from_template(
         """
-            System: You are an expert SEO & Conversion Copywriter.
-            Audience: Devs, founders, product managers and non-technical readers
+        System: You are a senior SEO strategist and conversion copywriter.
 
-            Task: Deeply analyze the provided <document> to generate SEO metadata which Improve CTR and follow the google SEO rules Strictly for the blog post.
+        Audience: Devs, founders, product managers, and non-technical readers.
 
-            Provide:
-            1. Primary Keyword: Identify the single most representative from the document.
+        Task: Analyze the <document> and output structured SEO metadata that improves CTR and follows Google SEO best practices.
 
-            Rules:
-            1. META TITLE ( Strictly UNDER 60 chars ):
-            - Analyze the document's main topic and create a descriptive, keyword-rich title. End with concrete nouns: audience, or topic scope, benefit.
-            - Incorporate the Primary Keyword naturally into a full phrase or headline.
-            - Include specific audience or use case when relevant.
-            - Be direct and descriptive—avoid vague hooks like "Unlock", "Master".
-            - Focus on information delivery, not hype.
+        Provide:
+            1. Primary Keyword: The most relevant search phrase that best rep core topic"
+        
+        Language rules:
+        - Include articles and prepositions where grammar requires them
 
-            2. META DESCRIPTION ( Strictly UNDER 150-160 chars ):
-            - Identify the Problem: Open with the specific technical problem or question.
-            - Briefly state the consequence of the problem and the method that fixes it.
-            -  End with the strategic business benefit for the reader.
-            - Action-oriented language.
-            - Frame the first sentence as a "citable block"—a factual, direct answer that AI agents can extract.
+        RULES:
+        1. META TITLE (40-60 chars, hard limits):
+        - Analyze the document's main topic and create a descriptive, keyword-rich title
+        PART 1 → What the page is about
+        PART 2 → What the reader gets — action-phrased and value-driven.
+        - Include the primary keyword naturally
 
-            3. URL ROUTES (5 slugs):
-            -  Provide 5 concise variations formatted as standard URLs.
-            - Use ONLY lowercase letters and hyphens
-            - Strictly NO dates, years, or numbers that will expire. Remove stop words
+       
+        2. META DESCRIPTION (140-160 chars, hard limits):
+            PART 1 → Sharp conversational question mirroring reader's search
+            PART 2 → Name 2-3 specific things from the document only — no filler
+            - Naturally weave in the primary keyword without forcing it
+            - Match the search intent of the document and Tone : Conversational, speaks directly to reader ,no invented claims
+            - Natural verbs only
 
-            CONSTRAINTS:
-            - Tone: Professional, helpful, and technical. No fluff or hype.
-            - No dates, years, or extra explanations
-            - CRITICAL: DO NOT output any reasoning, thought process, or conversational text.
-            - CRITICAL: DO NOT repeat the document content.
-            
-            - Output ONLY valid JSON 
-            {{
-                "meta_title": "string",
-                "meta_description": "string",
-                "meta_routes": ["string", "string", "string", "string", "string"]
-            }}
+        3. URL ROUTES (5 slugs):
+           - Derived from Key topics in the document
+           - Lowercase and hyphens only — no dates, years, numbers.
+           - Each slug must be a descriptive phrase, not a shortened fragment
 
-            <document>
-            {content}
-            </document>
+        CONSTRAINTS:
+        - No dates, years, or commentary in output
+        - Tone matches document (technical / casual / formal)
+        - Every claim from document only — never invent
+        - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it
+        - Output ONLY valid JSON
+
+        OUTPUT SCHEMA:
+        {{
+            "meta_title": "string",
+            "meta_description": "string",
+            "meta_routes": ["string", "string", "string", "string", "string"]
+        }}
+
+        <document>
+        {content}
+        </document>
         """
     )
 
-    chain = prompt | llm
+    chain = prompt | structured_llm
 
     # Limit content to roughly 15000 chars to avoid very large prompts
     content_to_process = parsed_content[:15000]
 
-    result = chain.invoke({"content": content_to_process})
+    print(f"[AI Generator] Using model: {settings.GROQ_MODEL}")
 
     try:
-        content = result.content.strip()
+        result = chain.invoke({"content": content_to_process})
+    except Exception as api_err:
+        print(
+            f"[AI Generator] API call FAILED — model '{settings.GROQ_MODEL}' may be invalid or unsupported."
+        )
+        print(f"[AI Generator] API error: {api_err}")
+        return SEOMetadata(
+            meta_title="Failed to generate SEO Title",
+            meta_description="API call failed. Check that the model name in config.py is a valid Groq model.",
+            meta_routes=["error-generating-routes"],
+        )
 
-        # Try to find a JSON block wrapped in ```json ... ``` or just ``` ... ```
-        match = re.search(r"```(?:json)?\s*(.*?)\s*```", content, re.DOTALL)
-        if match:
-            json_str = match.group(1)
-        else:
-            # Fallback: try to find the outermost curly braces
-            match = re.search(r"(\{.*\})", content, re.DOTALL)
-            if match:
-                json_str = match.group(1)
-            else:
-                json_str = content
-
-        parsed_json = json.loads(json_str.strip())
-
-        return SEOMetadata(**parsed_json)
+    # We skip regex extraction, because structured output guarantees parsing
+    try:
+        return result
     except Exception as e:
-        print(f"Error parsing LLM output: {e}\nRaw output: {result.content}")
+        print(f"[AI Generator] Error parsing LLM output: {e}")
         # Return fallback
         return SEOMetadata(
             meta_title="Failed to generate SEO Title",
-            meta_description=f"Error parsing LLM response. Raw: {result.content[:50]}...",
+            meta_description=f"Error parsing LLM response.",
             meta_routes=["error-generating-routes"],
         )

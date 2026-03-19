@@ -14,7 +14,7 @@ async def generate_metadata(file: UploadFile = File(...)):
     Receives an uploaded .docx file, parses and extracts content using Docling,
     and generates SEO metadata (Title, Description, URL routes) via Langchain & Groq.
     """
-    if not file.filename.endswith(".docx"):
+    if not file.filename or not file.filename.endswith(".docx"):
         raise HTTPException(status_code=400, detail="Only .docx files are permitted.")
         
     try:
