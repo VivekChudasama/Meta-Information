@@ -17,7 +17,7 @@ class SEOMetadata(BaseModel):
     )
 
 
-def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
+async def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
     """Generates SEO metadata from extracted document content using Langchain and Groq."""
 
     # Check if GROQ_API_KEY is available
@@ -32,7 +32,9 @@ def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
         groq_api_key=settings.GROQ_API_KEY,
         temperature=0.4,
         max_retries=3,
-        model_kwargs={"top_p": 0.9},
+        model_kwargs={
+            "top_p": 0.9  
+        }
     )
 
     # By using structured output with method="json_mode" we force the model to
@@ -42,44 +44,40 @@ def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
     # Configure the schema output via Prompt Instructions
     prompt = PromptTemplate.from_template(
         """
-        System: You are a senior SEO strategist and conversion copywriter.
+        <|start_header_id|>System<|end_header_id|>: You are a senior SEO strategist and conversion copywriter.
 
         Audience: Devs, founders, product managers, and non-technical readers.
 
-        Task: Analyze the <document> and output structured SEO metadata that improves CTR and follows Google SEO best practices.
+        Task: Analyze the given content and output structured SEO metadata that improves CTR and follows Google SEO best practices for the Blog Post.
 
         Provide:
-            1. Primary Keyword: The most relevant search phrase that best rep core topic"
-        
-        Language rules:
-        - Include articles and prepositions where grammar requires them
+            1. Primary Keyword: The most relevant search phrase that represent core topic"
 
         RULES:
-        1. META TITLE (40-60 chars, hard limits):
-        - Analyze the document's main topic and create a descriptive, keyword-rich title
-        PART 1 → What the page is about
-        PART 2 → What the reader gets — action-phrased and value-driven.
-        - Include the primary keyword naturally
+        1. META TITLE (40–60 characters , hard limit):
+            - Analyze the Blog Content and create a descriptive and keyword-rich title
+            PART 1 → What the page is about - name the concept clearly.
+            PART 2 → What the reader gets — action-phrased and value-driven.
+            - Include the primary keyword naturally
 
        
-        2. META DESCRIPTION (140-160 chars, hard limits):
+        2. META DESCRIPTION (40–60 characters , hard limit):
             PART 1 → Sharp conversational question mirroring reader's search
-            PART 2 → Name 2-3 specific things from the document only — no filler
+            PART 2 → Name 2-3 specific things from the Blog Content only — no filler.
             - Naturally weave in the primary keyword without forcing it
-            - Match the search intent of the document and Tone : Conversational, speaks directly to reader ,no invented claims
+            - Match the search intent of the Blog Content and Tone : Conversational, speaks directly to reader , not an ad ,no invented claims
             - Natural verbs only
 
         3. URL ROUTES (5 slugs):
-           - Derived from Key topics in the document
-           - Lowercase and hyphens only — no dates, years, numbers.
-           - Each slug must be a descriptive phrase, not a shortened fragment
+            - Derived from Key topics in the Blog Content
+            - Lowercase and hyphens only — no dates, years, numbers.
+            - Each slug must be a descriptive phrase, not a shortened fragment
 
         CONSTRAINTS:
-        - No dates, years, or commentary in output
-        - Tone matches document (technical / casual / formal)
-        - Every claim from document only — never invent
-        - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it
-        - Output ONLY valid JSON
+            - No dates, years, or commentary in output
+            - Every claim from Blog only — never invent
+            - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it
+            - Output ONLY valid JSON
 
         OUTPUT SCHEMA:
         {{
@@ -102,7 +100,7 @@ def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
     print(f"[AI Generator] Using model: {settings.GROQ_MODEL}")
 
     try:
-        result = chain.invoke({"content": content_to_process})
+        result = await chain.ainvoke({"content": content_to_process})
     except Exception as api_err:
         print(
             f"[AI Generator] API call FAILED — model '{settings.GROQ_MODEL}' may be invalid or unsupported."
@@ -122,6 +120,6 @@ def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
         # Return fallback
         return SEOMetadata(
             meta_title="Failed to generate SEO Title",
-            meta_description=f"Error parsing LLM response.",
+            meta_description="Error parsing LLM response.",
             meta_routes=["error-generating-routes"],
         )

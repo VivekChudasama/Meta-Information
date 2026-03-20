@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi.concurrency import run_in_threadpool
 
 from app.services.parser import parse_docx_to_markdown
 from app.services.ai_generator import generate_seo_metadata, SEOMetadata
@@ -23,14 +24,14 @@ async def generate_metadata(file: UploadFile = File(...)):
         with os.fdopen(fd, "wb") as f_out:
             shutil.copyfileobj(file.file, f_out)
         
-        # 1. Parse the document directly to a markdown string
-        parsed_markdown = parse_docx_to_markdown(temp_path)
+        # 1. Parse the document using a background thread to prevent blocking event loop
+        parsed_markdown = await run_in_threadpool(parse_docx_to_markdown, temp_path)
         
         # 2. Delete the temporary file promptly
         os.remove(temp_path)
         
         # 3. Feed the markdown to the Langchain + Groq AI generator
-        metadata = generate_seo_metadata(parsed_markdown)
+        metadata = await generate_seo_metadata(parsed_markdown)
         
         return metadata
         
