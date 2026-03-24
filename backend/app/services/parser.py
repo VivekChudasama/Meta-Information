@@ -1,17 +1,13 @@
-import os
 import re
 import heapq
 from collections import Counter
-from pathlib import Path
 from docling.document_converter import DocumentConverter
 from docling.datamodel.document import (
     SectionHeaderItem,
     TextItem,
     ListItem,
     TableItem,
-    PictureItem,
 )
-import pandas as pd
 
 
 class LLMContextOptimizer:

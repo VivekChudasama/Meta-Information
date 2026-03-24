@@ -1,7 +1,6 @@
 from langchain_core.prompts import PromptTemplate
 from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field
-
 from app.core.config import settings
 
 
@@ -53,7 +52,6 @@ async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SE
         RULES:
         1. META TITLE -> HARD LIMIT: 40-60 characters include spaces.
             - Analyze the Blog Content and create a descriptive and keyword-rich title
-            - Name the core concept clearly.
             - What the reader gets value-driven and action-oriented language.
             - Include the primary keyword naturally
  

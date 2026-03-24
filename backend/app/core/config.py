@@ -13,5 +13,5 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL: str = "meta-llama/llama-4-scout-17b-16e-instruct"
-
+ 
 settings = Settings()
