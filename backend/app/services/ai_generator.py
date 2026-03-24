@@ -50,13 +50,13 @@ async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SE
         The Primary Keyword for this blog post is: "{primary_keyword}"
  
         RULES:
-        1. META TITLE -> HARD LIMIT: 40-60 characters include spaces.
+        1. META TITLE (40-60 characters, hard limit include spaces):
             - Analyze the Blog Content and create a descriptive and keyword-rich title
             - What the reader gets value-driven and action-oriented language.
             - Include the primary keyword naturally
  
        
-        2. META DESCRIPTION HARD -> LIMIT: 140-160 characters include spaces.
+        2. META DESCRIPTION (140-160 characters, hard limit include spaces):
             - Open with a sharp conversational line that mirrors the reader's search intent.
             - Name specific things directly from the blog content — no filler.
             - Naturally weave in the primary keyword without forcing it

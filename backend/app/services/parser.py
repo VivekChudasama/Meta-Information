@@ -12,7 +12,7 @@ from docling.datamodel.document import (
 
 class LLMContextOptimizer:
     def __init__(self):
-        # Patterns to kill "meta-talk" and fluff that wastes tokens
+        # Patterns to remove "meta-talk" and fluff that wastes tokens
         self.fluff_patterns = [
             r"(?i)in this (guide|article|post|blog|section|video|paper|document),? you('ll| will) (understand|learn|find|discover|know).*",
             r"(?i)by the end of this (guide|article|post|blog|section).*",
@@ -28,7 +28,7 @@ class LLMContextOptimizer:
             r"(?i)this (paper|article|document|study) (presents|discusses|examines|explores).*",
             r"(?i)the (purpose|goal|aim|objective) of this (paper|study|article).*",
             # NEW: Specific filler phrase patterns
-            r"(?i)that'?s where .+ comes? in\.?",
+            r"(?i)that'?s where .+ comes? in\.?", 
             r"(?i)used across (different|various|many) (industries|sectors|fields|domains)\.?",
             r"(?i)(widely|commonly|frequently) used (in|across|for).*",
             r"(?i)(these|this|it) (can be|is|are) (applied|used|utilized) in.*",
@@ -40,7 +40,6 @@ class LLMContextOptimizer:
             "acknowledgments",
             "acknowledgements",
             "references",
-            "bibliography",
             "table of contents",
             "contents",
             "copyright",
@@ -48,7 +47,6 @@ class LLMContextOptimizer:
             "about the author",
             "about the authors",
             "preface",
-            "foreword",
         }
 
         # Common filler words (Stopwords)
