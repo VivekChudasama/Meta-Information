@@ -41,7 +41,7 @@ async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SE
     # Configure the schema output via Prompt Instructions
     prompt = PromptTemplate.from_template(
         """
-       <|header_start|>system<|header_end|>: You are a senior SEO strategist and conversion copywriter.
+        <|header_start|>system<|header_end|>: You are a senior SEO strategist and conversion copywriter.
  
         Audience: Devs, founders, product managers, and non-technical readers.
  
@@ -51,15 +51,13 @@ async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SE
  
         RULES:
         1. META TITLE (40-60 characters, hard limit include spaces):
-            - Analyze the Blog Content and create a descriptive and keyword-rich title
-            - What the reader gets value-driven and action-oriented language.
+            - Create a descriptive and keyword-rich meta title that highlights the reader's value using action-oriented language. 
             - Include the primary keyword naturally
  
-       
         2. META DESCRIPTION (140-160 characters, hard limit include spaces):
-            - Open with a sharp conversational line that mirrors the reader's search intent.
-            - Name specific things directly from the blog content — no filler.
-            - Naturally weave in the primary keyword without forcing it
+            - Start with a punchy opening sentence that explicitly addresses the user's problem. 
+            - Mention specific things mention in the blog content — no filler.
+            - Include the primary keyword naturally
             - Match the search intent of the Blog Content and Tone : Conversational, speaks directly to reader , not an ad ,no invented claims
             - Natural verbs only
  
@@ -70,7 +68,7 @@ async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SE
  
         CONSTRAINTS:
             - No dates, years, or commentary in output
-            - Every claim from Blog only — never invent
+            - ONLY use facts explicitly mentioned in the <document>
             - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it
             - Output ONLY valid JSON
  
