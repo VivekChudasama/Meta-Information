@@ -18,7 +18,9 @@ class SEOMetadata(BaseModel):
     )
 
 
-async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SEOMetadata:
+async def generate_seo_metadata(
+    parsed_content: str, primary_keyword: str
+) -> SEOMetadata:
     """Generates SEO metadata from extracted document content and primary keyword using Langchain and Groq."""
 
     # Check if GROQ_API_KEY is available
@@ -56,10 +58,9 @@ async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SE
  
         2. META DESCRIPTION (140-160 characters, hard limit include spaces):
             - Start with a punchy opening sentence that explicitly addresses the user's problem. 
-            - Mention specific things mention in the blog content — no filler.
-            - Include the primary keyword naturally
+            - Include specific things mention in the blog content — no filler.
+            - Include the primary keyword naturally and Natural verbs only
             - Match the search intent of the Blog Content and Tone : Conversational, speaks directly to reader , not an ad ,no invented claims
-            - Natural verbs only
  
         3. URL ROUTES (5 slugs):
             - Derived from Key topics in the Blog Content
@@ -88,7 +89,9 @@ async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SE
     chain = prompt | structured_llm
 
     try:
-        result = await chain.ainvoke({"content": parsed_content, "primary_keyword": primary_keyword})
+        result = await chain.ainvoke(
+            {"content": parsed_content, "primary_keyword": primary_keyword}
+        )
     except Exception as api_err:
         print(
             f"[AI Generator] API call FAILED — model '{settings.GROQ_MODEL}' may be invalid or unsupported."
