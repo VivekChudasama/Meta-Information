@@ -46,7 +46,6 @@ class LLMContextOptimizer:
             "disclaimer",
             "about the author",
             "about the authors",
-            "preface",
         }
 
         # Common filler words (Stopwords)
