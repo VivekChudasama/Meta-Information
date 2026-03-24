@@ -28,14 +28,14 @@ class LLMContextOptimizer:
             r"(?i)this (paper|article|document|study) (presents|discusses|examines|explores).*",
             r"(?i)the (purpose|goal|aim|objective) of this (paper|study|article).*",
             # NEW: Specific filler phrase patterns
-            r"(?i)that'?s where .+ comes? in\.?", 
+            r"(?i)that'?s where .+ comes? in\.?",
             r"(?i)used across (different|various|many) (industries|sectors|fields|domains)\.?",
             r"(?i)(widely|commonly|frequently) used (in|across|for).*",
             r"(?i)(these|this|it) (can be|is|are) (applied|used|utilized) in.*",
             r"(?i)has (many|numerous|several|various) (applications|uses).*",
         ]
 
-        # Boilerplate sections to skip entirely 
+        # Boilerplate sections to skip entirely
         self.skip_sections = {
             "acknowledgments",
             "acknowledgements",
@@ -557,7 +557,6 @@ def parse_docx_to_markdown(filepath: str) -> str:
     if not headings:
         extracted_md += "⚠️  No H1 or H2 headings detected.\n"
 
-    # Tables & Data section completely removed as requested.
 
     # 4. Extract Conclusion
     sections = []
