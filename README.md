@@ -1,71 +1,84 @@
-# SEO Metadata Generator API
+#  Mata Information: AI-Powered SEO Metadata Generator
 
-A high-performance FastAPI service that uses AI (Groq + LangChain) to transform document content into SEO-optimized metadata.
 
-## 🚀 Features
 
-- **Document Parsing**: Automatically extracts text from uploaded `.docx` files and converts them into structured Markdown for easier AI analysis.
-- **AI-Driven SEO**: Generates professional meta titles, descriptions, and URL slugs based on the provided content.
-- **Targeted Optimization**: Accepts a `primary_keyword` in the request to ensure the metadata is focused on your target search term.
-- **Structured Output**: Uses Pydantic for strict schema validation, ensuring consistent and predictable JSON results every time.
-- **High Performance**: Powered by Groq's LPU inference engine for lightning-fast results.
+<p align="center">
+  <img src="https://img.shields.io/badge/FastAPI-0055ff?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=langchain&logoColor=white" alt="LangChain">
+  <img src="https://img.shields.io/badge/Groq-f55036?style=for-the-badge&logo=groq&logoColor=white" alt="Groq">
+  <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+</p>
+
+---
+
+**Mata Information** is a high-performance, developer-first API that transforms raw documents into high-converting, keyword-rich SEO metadata. By combining **Groq's LPU inference engine** with advanced **token-optimization** and **context-cleaning**, it generates meta titles, descriptions, and URL slugs that increase CTR and boost search rankings.
+
+## 🚀 Key Features
+
+- **🧠 LLM Context Optimizer**: Automatically strips "fluff," disclaimers, and boilerplate from documents to optimize token usage and focus LLM attention on core value.
+- **⚡ Lightning Fast Inference**: Integrated with **Groq** for sub-second metadata generation from documents of any size.
+- **🎯 Keyword-Centric**: Accepts a `primary_keyword` to ensure every meta field is perfectly aligned with your target SEO strategy.
+- **🛡️ Structured & Validated**: Every response is validated using **Pydantic v2**, ensuring your frontend always receives a clean, consistent JSON schema.
+- **🏗️ Format Support**: Robust parsing for `.docx` documents using `docling` and `python-docx`.
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
-- **AI Integration**: [LangChain](https://www.langchain.com/) + [Groq](https://groq.com/)
-- **Document Processing**: `python-docx` and `docling`
-- **Validation**: [Pydantic v2](https://docs.pydantic.dev/latest/)
+- **Core**: FastAPI (Python 3.10+)
+- **Inference**: LangChain + Groq (Llama 3 / Mixtral)
+- **Parsing**: `docling`, `python-docx`
+- **Validation**: Pydantic v2
 
-## 📦 Installation
+## 📦 Quick Start
 
-1.  **Clone the repository** (if you haven't already).
-2.  **Navigate to the backend directory**:
-    ```bash
-    cd backend
-    ```
-3.  **Create a virtual environment** (recommended):
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    ```
-4.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-5.  **Set up your environment**:
-    Create an `.env` file in the `environment/` directory with your Groq API key:
-    ```env
-    GROQ_API_KEY=your_key_here
-    ```
+### 1. Installation
+```bash
+# Clone the repository
+git clone https://github.com/VivekChudasama/Meta-Information.git
+cd Meta-Information/backend
 
-## 🏃 Running the Application
+# Create & activate a virtual environment
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
 
-To start the development server, run:
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 2. Configuration
+Create an `.env` file in the `environment/` directory:
+```env
+GROQ_API_KEY=gsk_your_key_here
+```
+
+### 3. Run the Server
 ```bash
 uvicorn app.main:app --reload
 ```
-The API will be available at `http://localhost:8000`.
 
 ## 📡 API Usage
 
-### Generate SEO Metadata
+### Generate Metadata
 **Endpoint**: `POST /api/v1/generate-metadata`
 
-**Input (multipart/form-data)**:
-- `file`: Your `.docx` document.
-- `primary_keyword`: Your target search term.
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `file` | `binary` | The document (`.docx`) to process. |
+| `primary_keyword` | `string` | Your target keyword for SEO optimization. |
 
 **Example Response**:
 ```json
 {
-  "meta_title": "10 Remote Work Productivity Tips | Grow Your Business",
-  "meta_description": "Are you struggling to stay productive while working from home? Learn the 10 most effective remote work strategies used by successful founders.",
-  "meta_routes": [
-    "remote-work-productivity-tips",
-    "how-to-stay-productive-at-home",
-    "work-from-home-strategies"
-  ]
+    "meta_title": "n8n vs Relevance AI: Which Automation Tool is Right for You?",
+    "meta_description": "Compare n8n and Relevance AI to choose the best automation tool for your business. Learn about their key features, pros, and cons, and make an informed decision.",
+    "meta_routes": [
+        "n8n-vs-relevance-ai",
+        "what-is-n8n",
+        "what-is-relevance-ai",
+        "n8n-vs-relevance-ai-comparison",
+        "choosing-the-right-automation-tool"
+    ]
 }
 ```
-
