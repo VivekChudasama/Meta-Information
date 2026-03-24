@@ -19,16 +19,14 @@ class SEOMetadata(BaseModel):
     )
 
 
-async def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
-    """Generates SEO metadata from extracted document content using Langchain and Groq."""
+async def generate_seo_metadata(parsed_content: str, primary_keyword: str) -> SEOMetadata:
+    """Generates SEO metadata from extracted document content and primary keyword using Langchain and Groq."""
 
     # Check if GROQ_API_KEY is available
     if not settings.GROQ_API_KEY:
         raise ValueError("GROQ_API_KEY not found in environment variables.")
 
     # Initialize the Groq Chat model
-    # Groq automatically caches the static system prompt prefix server-side.
-    # Only the dynamic document content changes per request — it is never stored.
     llm = ChatGroq(
         model_name=settings.GROQ_MODEL,
         groq_api_key=settings.GROQ_API_KEY,
@@ -50,8 +48,7 @@ async def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
  
         Task: Analyze the given content and output structured SEO metadata that improves CTR and follows Google SEO best practices for the Blog Post.
  
-        Provide:
-            1. Primary Keyword: The most relevant search phrase that represent core topic"
+        The Primary Keyword for this blog post is: "{primary_keyword}"
  
         RULES:
         1. META TITLE -> HARD LIMIT: 40-60 characters include spaces.
@@ -95,7 +92,7 @@ async def generate_seo_metadata(parsed_content: str) -> SEOMetadata:
     chain = prompt | structured_llm
 
     try:
-        result = await chain.ainvoke({"content": parsed_content})
+        result = await chain.ainvoke({"content": parsed_content, "primary_keyword": primary_keyword})
     except Exception as api_err:
         print(
             f"[AI Generator] API call FAILED — model '{settings.GROQ_MODEL}' may be invalid or unsupported."

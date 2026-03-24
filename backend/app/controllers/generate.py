@@ -6,7 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 from app.services.parser import parse_docx_to_markdown
 from app.services.ai_generator import generate_seo_metadata, SEOMetadata
 
-async def process_metadata_generation(file: UploadFile) -> SEOMetadata:
+async def process_metadata_generation(file: UploadFile, primary_keyword: str) -> SEOMetadata:
     """
     Controller logic to handle the flow:
     1. Upload file to temp
@@ -29,8 +29,8 @@ async def process_metadata_generation(file: UploadFile) -> SEOMetadata:
         os.remove(temp_path)
 
         # 3. Call the AI model
-        print(f"[Controller] Generating SEO metadata for: {file.filename}")
-        metadata = await generate_seo_metadata(parsed_markdown)
+        print(f"[Controller] Generating SEO metadata for: {file.filename} with keyword: {primary_keyword}")
+        metadata = await generate_seo_metadata(parsed_markdown, primary_keyword)
 
         return metadata
 
