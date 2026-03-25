@@ -58,13 +58,13 @@ async def generate_seo_metadata(
             - Use active verbs and integrate the primary keyword naturally.
             - Match the search intent of the Blog Content and maintain a Conversational tone (not an ad, no invented claims).
  
-        3. META ROUTES (5 slugs for the "meta_routes" JSON field):
+        3. META ROUTES (5 slugs):
             - Derived from Key topics in the Blog Content.
             - Lowercase and hyphens only — no dates, years, or numbers.
             - Each slug must be a descriptive phrase, not a shortened fragment.
 
         4. MANDATORY CONSTRAINTS:
-            - Strictly adhere to ideal character limits: 50-60 characters for titles and 150-160 for meta descriptions to ensure rich search snippets.
+            - To optimize for Google SEO and ensure rich search snippets, strictly adhere to the ideal character limits: 50–60 characters for titles and 150–160 for meta descriptions.
             - ONLY use facts explicitly mentioned in the <document>.
             - Output ONLY valid JSON with no dates, years, or external commentary .
             - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it.
