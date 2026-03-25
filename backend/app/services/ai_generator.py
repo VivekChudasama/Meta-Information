@@ -23,24 +23,20 @@ async def generate_seo_metadata(
 ) -> SEOMetadata:
     """Generates SEO metadata from extracted document content and primary keyword using Langchain and Groq."""
 
-    # Check if GROQ_API_KEY is available
     if not settings.GROQ_API_KEY:
         raise ValueError("GROQ_API_KEY not found in environment variables.")
 
-    # Initialize the Groq Chat model
     llm = ChatGroq(
         model_name=settings.GROQ_MODEL,
         groq_api_key=settings.GROQ_API_KEY,
-        temperature=0.4,
+        temperature=0.45,
         max_retries=3,
+        max_tokens=150,
         model_kwargs={"top_p": 0.9},
     )
 
-    # By using structured output with method="json_mode" we force the model to
-    # output strict JSON instead of spending tokens reasoning or chatting.
     structured_llm = llm.with_structured_output(SEOMetadata, method="json_mode")
 
-    # Configure the schema output via Prompt Instructions
     prompt = PromptTemplate.from_template(
         """
         <|header_start|>system<|header_end|>: You are a senior SEO strategist and conversion copywriter.
@@ -52,58 +48,45 @@ async def generate_seo_metadata(
         The Primary Keyword for this blog post is: "{primary_keyword}"
  
         RULES:
-        1. META TITLE (40-60 characters, hard limit include spaces):
-            - Create a descriptive and keyword-rich meta title that highlights the reader's value using action-oriented language. 
-            - Include the primary keyword naturally
-  
-        2. META DESCRIPTION (140-160 characters, hard limit include spaces):
+        1. META TITLE (50 to 60 characters):
+            - Create a descriptive and keyword-rich meta title that highlights the reader's value. 
+            - Include the primary keyword naturally.
+           
+        2. META DESCRIPTION (150 to 160 characters):
             - Start with a punchy opening sentence that explicitly addresses the user's problem. 
-            - Include specific details mentioned in the content (no filler).
+            - Include specific details mentioned in the Blog Content (no filler).
             - Use active verbs and integrate the primary keyword naturally.
             - Match the search intent of the Blog Content and maintain a Conversational tone (not an ad, no invented claims).
  
-        3. URL ROUTES (5 slugs):
-            - Derived from Key topics in the Blog Content
-            - Lowercase and hyphens only — no dates, years, numbers.
-            - Each slug must be a descriptive phrase, not a shortened fragment
- 
-        CONSTRAINTS:
-            - No dates, years, or commentary in output
-            - ONLY use facts explicitly mentioned in the <document>
-            - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it
-            - Output ONLY valid JSON
- 
+        3. META ROUTES (5 slugs for the "meta_routes" JSON field):
+            - Derived from Key topics in the Blog Content.
+            - Lowercase and hyphens only — no dates, years, or numbers.
+            - Each slug must be a descriptive phrase, not a shortened fragment.
+
+        4. MANDATORY CONSTRAINTS:
+            - Strictly adhere to ideal character limits: 50-60 characters for titles and 150-160 for meta descriptions to ensure rich search snippets.
+            - ONLY use facts explicitly mentioned in the <document>.
+            - Output ONLY valid JSON with no dates, years, or external commentary .
+            - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it.
+        
         <document>
         {content}
         </document>
         """
     )
-
+ 
     chain = prompt | structured_llm
-
+ 
     try:
         result = await chain.ainvoke(
             {"content": parsed_content, "primary_keyword": primary_keyword}
         )
-    except Exception as api_err:
-        print(
-            f"[AI Generator] API call FAILED — model '{settings.GROQ_MODEL}' may be invalid or unsupported."
-        )
-        print(f"[AI Generator] API error: {api_err}")
-        return SEOMetadata(
-            meta_title="Failed to generate SEO Title",
-            meta_description="API call failed. Check that the model name in config.py is a valid Groq model.",
-            meta_routes=["error-generating-routes"],
-        )
-
-    # We skip regex extraction, because structured output guarantees parsing
-    try:
         return result
+        
     except Exception as e:
-        print(f"[AI Generator] Error parsing LLM output: {e}")
-        # Return fallback
+        print(f"[AI Generator] Error calling LLM: {e}")
         return SEOMetadata(
-            meta_title="Failed to generate SEO Title",
-            meta_description="Error parsing LLM response.",
-            meta_routes=["error-generating-routes"],
+            meta_title="Generation Error",
+            meta_description="Failed to create SEO content because of an API issue.",
+            meta_routes=["error"]
         )

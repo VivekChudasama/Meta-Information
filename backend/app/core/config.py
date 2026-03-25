@@ -15,3 +15,4 @@ class Settings(BaseSettings):
     GROQ_MODEL: str = "meta-llama/llama-4-scout-17b-16e-instruct"
  
 settings = Settings()
+ 
