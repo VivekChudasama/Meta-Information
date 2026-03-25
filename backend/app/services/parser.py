@@ -47,8 +47,8 @@ CHAR_PATTERN = re.compile(r"\b(key|main|primary|characteristic|feature|attribute
 class ParsedSentence:
     text: str
     tokens_count: int
-    lemmas_list: list[str]
-    lemmas_set: set[str]
+    keywords_list: list[str]
+    keywords_set: set[str]
     is_heading: bool
     num_ratio: float
 
@@ -65,7 +65,7 @@ def parse_sentences(text: str) -> list[ParsedSentence]:
         if not s_text:
             continue
             
-        lemmas_list = []
+        keywords_list = []
         num_count = 0
         total_tokens = 0
         for t in s:
@@ -74,7 +74,7 @@ def parse_sentences(text: str) -> list[ParsedSentence]:
                 if t.like_num:
                     num_count += 1
                 if not t.is_stop and not t.is_punct and not t.like_num and len(t.lemma_) > 2:
-                    lemmas_list.append(t.lemma_.lower())
+                    keywords_list.append(t.lemma_.lower())
                     
         num_ratio = num_count / total_tokens if total_tokens > 0 else 0.0
         is_heading = total_tokens <= 10 and re.match(r"^[A-Z]", s_text) and not s_text.endswith(".")
@@ -82,8 +82,8 @@ def parse_sentences(text: str) -> list[ParsedSentence]:
         parsed.append(ParsedSentence(
             text=s_text,
             tokens_count=total_tokens,
-            lemmas_list=lemmas_list,
-            lemmas_set=set(lemmas_list),
+            keywords_list=keywords_list,
+            keywords_set=set(keywords_list),
             is_heading=bool(is_heading),
             num_ratio=num_ratio
         ))
@@ -109,7 +109,7 @@ def dedup_headings(sentences: list[ParsedSentence]) -> list[ParsedSentence]:
     seen, out = set(), []
     for s in sentences:
         if s.is_heading:
-            key = " ".join(sorted(s.lemmas_list))
+            key = " ".join(sorted(s.keywords_list))
             if key in seen:
                 continue
             seen.add(key)
@@ -122,7 +122,7 @@ def dedup_similar(sentences: list[ParsedSentence], threshold: float = 0.7) -> li
         if i in skip:
             continue
         for j in range(i + 1, len(sentences)):
-            if j not in skip and jaccard_sets(s1.lemmas_set, sentences[j].lemmas_set) >= threshold:
+            if j not in skip and jaccard_sets(s1.keywords_set, sentences[j].keywords_set) >= threshold:
                 skip.add(j if len(s1.text) <= len(sentences[j].text) else i)
         if i not in skip:
             out.append(s1)
@@ -146,8 +146,8 @@ def merge_defs(sentences: list[ParsedSentence]) -> list[ParsedSentence]:
             combined = ParsedSentence(
                 text=s_d.text + " " + s_best.text,
                 tokens_count=s_d.tokens_count + s_best.tokens_count,
-                lemmas_list=s_d.lemmas_list + s_best.lemmas_list,
-                lemmas_set=s_d.lemmas_set | s_best.lemmas_set,
+                keywords_list=s_d.keywords_list + s_best.keywords_list,
+                keywords_set=s_d.keywords_set | s_best.keywords_set,
                 is_heading=False,
                 num_ratio=max(s_d.num_ratio, s_best.num_ratio)
             )
@@ -172,23 +172,23 @@ def clean_and_score(text: str, retention_ratio: float = 0.25) -> str:
     if not sents:
         return ""
 
-    all_lemmas = []
+    all_keywords = []
     for s in sents:
-        all_lemmas.extend(s.lemmas_list)
+        all_keywords.extend(s.keywords_list)
 
-    if not all_lemmas:
+    if not all_keywords:
         return " ".join(s.text for s in sents[:2])
 
-    freq  = Counter(all_lemmas)
+    freq  = Counter(all_keywords)
     max_f = max(freq.values())
     wf    = {w: f / max_f for w, f in freq.items()}
 
     scores = []
     for s in sents:
-        if not s.lemmas_list:
+        if not s.keywords_list:
             scores.append(0.0)
             continue
-        score = sum(wf.get(w, 0) for w in s.lemmas_list) / len(s.lemmas_list)
+        score = sum(wf.get(w, 0) for w in s.keywords_list) / len(s.keywords_list)
         scores.append(score)
 
     top_count = max(1, int(len(sents) * retention_ratio))
