@@ -66,7 +66,7 @@ async def generate_seo_metadata(
         4. MANDATORY CONSTRAINTS:
             - To optimize for Google SEO and ensure rich search snippets, strictly adhere to the ideal character limits: 50–60 characters for titles and 150–160 for meta descriptions.
             - ONLY use facts explicitly mentioned in the <document>.
-            - Output ONLY valid JSON with no dates, years, or external commentary .
+            - Output ONLY valid JSON with no dates, years, or external commentary and no symbols.
             - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it.
         
         <document>

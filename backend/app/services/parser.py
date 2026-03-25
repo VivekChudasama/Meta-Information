@@ -6,7 +6,7 @@ nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
 nlp.add_pipe("sentencizer")
 
 # ---------------------------------------------------------------------------
-# Summarizer — spaCy POS only, no regex, no word lists
+# Summarizer
 # ---------------------------------------------------------------------------
 
 
