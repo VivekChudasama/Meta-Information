@@ -55,7 +55,7 @@ async def generate_seo_metadata(
         2. META DESCRIPTION (150 to 160 characters):
             - Start with a punchy opening sentence that explicitly addresses the user's problem. 
             - Include specific details mentioned in the Blog Content (no filler).
-            - Use active verbs and integrate the primary keyword naturally.
+            - Use natural verbs and integrate the primary keyword naturally.
             - Match the search intent of the Blog Content and maintain a Conversational tone (not an ad, no invented claims).
  
         3. META ROUTES (5 slugs):
