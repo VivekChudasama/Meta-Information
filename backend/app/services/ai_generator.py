@@ -55,12 +55,12 @@ async def generate_seo_metadata(
         1. META TITLE (40-60 characters, hard limit include spaces):
             - Create a descriptive and keyword-rich meta title that highlights the reader's value using action-oriented language. 
             - Include the primary keyword naturally
- 
+  
         2. META DESCRIPTION (140-160 characters, hard limit include spaces):
             - Start with a punchy opening sentence that explicitly addresses the user's problem. 
-            - Include specific things mention in the blog content — no filler.
-            - Include the primary keyword naturally and Natural verbs only
-            - Match the search intent of the Blog Content and Tone : Conversational, speaks directly to reader , not an ad ,no invented claims
+            - Include specific details mentioned in the content (no filler).
+            - Use active verbs and integrate the primary keyword naturally.
+            - Match the search intent of the Blog Content and maintain a Conversational tone (not an ad, no invented claims).
  
         3. URL ROUTES (5 slugs):
             - Derived from Key topics in the Blog Content
@@ -72,13 +72,6 @@ async def generate_seo_metadata(
             - ONLY use facts explicitly mentioned in the <document>
             - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it
             - Output ONLY valid JSON
- 
-        OUTPUT SCHEMA:
-        {{
-            "meta_title": "string",
-            "meta_description": "string",
-            "meta_routes": ["string", "string", "string", "string", "string"]
-        }}
  
         <document>
         {content}
