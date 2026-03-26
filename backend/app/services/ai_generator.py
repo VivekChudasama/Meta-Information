@@ -65,11 +65,10 @@ async def generate_seo_metadata(
             - Each slug must be a descriptive phrase, not a shortened fragment.
 
         4. MANDATORY CONSTRAINTS:
-            - ABSOLUTE LIMITS: Meta Titles must be ≤60 characters and Meta Descriptions must be ≤160 characters. If your content exceeds these limits, you MUST rephrase and condense it until it fits strictly within the allowed range.
+            - To optimize for Google SEO and ensure rich search snippets, strictly adhere to the ideal character limits: 50–60 characters for titles and 150–160 for meta descriptions. If your content exceeds these limits, you MUST rephrase and condense it until it fits strictly within the allowed range.
             - ONLY use facts explicitly mentioned in the <document> and do not include filler phrases or generic greetings. 
             - Output ONLY valid JSON with no dates, years, or external commentary and no symbols.
             - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it.
-        <|eot|>
             
         <document>
         {content}
