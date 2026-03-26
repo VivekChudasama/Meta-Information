@@ -3,9 +3,7 @@ from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
 # Load from specific environment folder
-load_dotenv(
-    dotenv_path=os.path.join(os.path.dirname(__file__), "../../environment/.env")
-)
+load_dotenv(os.path.join(os.getcwd(), "environment", ".env"))
 
 
 class Settings(BaseSettings):

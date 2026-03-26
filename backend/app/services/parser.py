@@ -28,39 +28,42 @@ def summarize(text: str, max_sentences: int = 4) -> str:
     Optimized Extractive summarizer using Sumy's LuhnSummarizer with stemming.
     """
     text = text.strip()
-    
+
     # Early exit: If text is empty or already shorter than the target length, just return it.
-    if not text or len(text.split('.')) <= max_sentences:
+    if not text or len(text.split(".")) <= max_sentences:
         return text
 
     try:
         # Initialize parser and tokenizer
         parser = PlaintextParser.from_string(text, Tokenizer("english"))
-        
+
         # Initialize the Stemmer to group word variations
         stemmer = Stemmer("english")
-        
+
         # Pass the stemmer directly into the LuhnSummarizer
         summarizer = LuhnSummarizer(stemmer)
         summarizer.stop_words = get_stop_words("english")
-        
+
         # Extract the most significant sentences (requesting slightly more to filter duplicates)
         summary = summarizer(parser.document, max_sentences + 2)
-        
+
         kept = []
         seen_word_sets = []
-        
+
         for sentence in summary:
             sent_text = str(sentence).strip()
             # Create a basic word set for deduplication check
             words = set(sent_text.lower().split())
-            
+
             # If two sentences share >60% of the same words, they are duplicates
             # We want to keep the longer/richer one
             duplicate_idx = next(
-                (i for i, seen in enumerate(seen_word_sets) 
-                 if len(words & seen) / max(len(words | seen), 1) > 0.60),
-                None
+                (
+                    i
+                    for i, seen in enumerate(seen_word_sets)
+                    if len(words & seen) / max(len(words | seen), 1) > 0.60
+                ),
+                None,
             )
 
             if duplicate_idx is None:
@@ -71,15 +74,17 @@ def summarize(text: str, max_sentences: int = 4) -> str:
                 if len(sent_text) > len(kept[duplicate_idx]):
                     kept[duplicate_idx] = sent_text
                     seen_word_sets[duplicate_idx] = words
-            
+
             if len(kept) == max_sentences:
                 break
-        
+
         return " ".join(kept) if kept else text
-        
+
     except Exception as e:
         print(f"Sumy Luhn summarizer error: {e}")
         return text
+
+
 # ---------------------------------------------------------------------------
 # Document parsing
 # ---------------------------------------------------------------------------
@@ -120,19 +125,26 @@ def parse_docx_to_markdown(filepath: str) -> str:
                 for run in p.runs:
                     # Check for hard page breaks or rendered page breaks in the run
                     has_run_break = any(
-                        br.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type") == "page"
-                        for br in run._element.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}br")
-                    ) or run._element.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}lastRenderedPageBreak")
+                        br.get(
+                            "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type"
+                        )
+                        == "page"
+                        for br in run._element.findall(
+                            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}br"
+                        )
+                    ) or run._element.findall(
+                        ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}lastRenderedPageBreak"
+                    )
 
                     if has_run_break:
                         page_done = True
                         break
                     paragraph_text_on_page.append(run.text)
-                
+
                 first_page_text = "".join(paragraph_text_on_page).strip()
                 if first_page_text:
                     first_page.append(first_page_text)
-                
+
                 # Global fallback limit if no page break is found
                 if len(" ".join(first_page).split()) >= 210:
                     page_done = True
