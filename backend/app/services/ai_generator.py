@@ -47,12 +47,14 @@ async def generate_seo_metadata(
         The Primary Keyword for this blog post is: "{primary_keyword}"
  
         RULES:
-        1. META TITLE (50 to 60 characters)
+        1. META TITLE
+            - MAX 50-60 characters — count every character including spaces. If over 60, make it shorter.
             - Create a descriptive and keyword-rich meta title that highlights the reader's value. 
             - Include the primary keyword naturally.
            
-        2. META DESCRIPTION (150 to 160 characters)
-            - Start with a punchy opening sentence that explicitly addresses the user's problem. 
+        2. META DESCRIPTION
+            - MAX 150-160 characters — count every character including spaces. If over 160, make it shorter.
+            - Open with a sharp, conversational question that mirrors the reader's exact search intent.
             - Include specific details mentioned in the Blog Content (no filler).
             - Use natural verbs and integrate the primary keyword naturally.
             - Match the search intent of the Blog Content and maintain a Conversational tone (not an ad, no invented claims).
@@ -63,10 +65,11 @@ async def generate_seo_metadata(
             - Each slug must be a descriptive phrase, not a shortened fragment.
 
         4. MANDATORY CONSTRAINTS:
-            - To optimize for Google SEO and ensure rich search snippets, strictly adhere to the ideal character limits: 50–60 characters for titles and 150–160 for meta descriptions.            
-            - ONLY use facts explicitly mentioned in the <document>.
+            - ABSOLUTE LIMITS: Meta Titles must be ≤60 characters and Meta Descriptions must be ≤160 characters. If your content exceeds these limits, you MUST rephrase and condense it until it fits strictly within the allowed range.
+            - ONLY use facts explicitly mentioned in the <document> and do not include filler phrases or generic greetings. 
             - Output ONLY valid JSON with no dates, years, or external commentary and no symbols.
             - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it.
+        <|eot|>
             
         <document>
         {content}
