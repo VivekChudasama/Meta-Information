@@ -1,65 +1,85 @@
-import spacy
+import nltk
+
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt", quiet=True)
+try:
+    nltk.data.find("tokenizers/punkt_tab")
+except LookupError:
+    nltk.download("punkt_tab", quiet=True)
+
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.luhn import LuhnSummarizer
+from sumy.utils import get_stop_words
+from sumy.nlp.stemmers import Stemmer
+
 from docling.document_converter import DocumentConverter
 from docling.datamodel.document import SectionHeaderItem, TextItem, ListItem, TableItem
-
-nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
-nlp.add_pipe("sentencizer")
 
 # ---------------------------------------------------------------------------
 # Summarizer
 # ---------------------------------------------------------------------------
 
 
-def summarize(text: str, max_sentences: int = 5) -> str:
+def summarize(text: str, max_sentences: int = 4) -> str:
     """
-    Extractive summarizer using spaCy POS tags only.
-
-    1. Segment into sentences.
-    2. Drop too-short: fewer than 5 non-punct tokens.
-    3. Drop low-density: content tokens (NOUN, PROPN, VERB, non-stop) < 30% of sentence.
-    4. Remove duplicate sentences: if two sentences share >60% word overlap, drop the later one.
-    5. Return first max_sentences joined as a paragraph.
+    Optimized Extractive summarizer using Sumy's LuhnSummarizer with stemming.
     """
-    doc = nlp(text.strip())
+    text = text.strip()
+    
+    # Early exit: If text is empty or already shorter than the target length, just return it.
+    if not text or len(text.split('.')) <= max_sentences:
+        return text
 
-    kept: list[str] = []
-    seen: list[set] = []
+    try:
+        # Initialize parser and tokenizer
+        parser = PlaintextParser.from_string(text, Tokenizer("english"))
+        
+        # Initialize the Stemmer to group word variations
+        stemmer = Stemmer("english")
+        
+        # Pass the stemmer directly into the LuhnSummarizer
+        summarizer = LuhnSummarizer(stemmer)
+        summarizer.stop_words = get_stop_words("english")
+        
+        # Extract the most significant sentences (requesting slightly more to filter duplicates)
+        summary = summarizer(parser.document, max_sentences + 2)
+        
+        kept = []
+        seen_word_sets = []
+        
+        for sentence in summary:
+            sent_text = str(sentence).strip()
+            # Create a basic word set for deduplication check
+            words = set(sent_text.lower().split())
+            
+            # If two sentences share >60% of the same words, they are duplicates
+            # We want to keep the longer/richer one
+            duplicate_idx = next(
+                (i for i, seen in enumerate(seen_word_sets) 
+                 if len(words & seen) / max(len(words | seen), 1) > 0.60),
+                None
+            )
 
-    # Iterate over sentences in the document
-    for sent in doc.sents:
-        # Remove punctuation and whitespace tokens
-        tokens = [t for t in sent if not t.is_space and not t.is_punct]
-
-        # filter 1 — too short
-        if len(tokens) < 5:
-            continue
-
-        # filter 2 — density:  It identifies "content words" (Nouns, Proper Nouns, and Verbs) 
-        # while ignoring "stop words" (common fillers like "and", "the", "is").
-        content = [
-            t for t in tokens if t.pos_ in {"NOUN", "PROPN", "VERB"} and not t.is_stop
-        ]
-        if not content or len(content) / len(tokens) < 0.30:
-            continue
-
-        # filter 3 — Remove duplicate sentences via word overlap
-        words = {t.text.lower() for t in content}
-        duplicate = any(
-            # If the overlap is greater than 60%, the sentence is considered a duplicate and skipped.
-            len(words & prev) / max(len(words | prev), 1) > 0.60 for prev in seen 
-        )
-        if duplicate:
-            continue
-
-        kept.append(sent.text.strip())
-        seen.append(words)
-
-        if len(kept) == max_sentences:
-            break
-
-    return " ".join(kept) if kept else text
-
-
+            if duplicate_idx is None:
+                kept.append(sent_text)
+                seen_word_sets.append(words)
+            else:
+                # Prefer the longer sentence if they are similar
+                if len(sent_text) > len(kept[duplicate_idx]):
+                    kept[duplicate_idx] = sent_text
+                    seen_word_sets[duplicate_idx] = words
+            
+            if len(kept) == max_sentences:
+                break
+        
+        return " ".join(kept) if kept else text
+        
+    except Exception as e:
+        print(f"Sumy Luhn summarizer error: {e}")
+        return text
 # ---------------------------------------------------------------------------
 # Document parsing
 # ---------------------------------------------------------------------------
@@ -94,20 +114,27 @@ def parse_docx_to_markdown(filepath: str) -> str:
             if not text:
                 continue
 
-            has_break = any(
-                br.get(
-                    "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type"
-                )
-                == "page"
-                for run in p.runs
-                for br in run._element.findall(
-                    ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}br"
-                )
-            )
-
             if not page_done:
-                first_page.append(text)
-                if has_break or len(" ".join(first_page).split()) >= 500:
+                # Inspect each run to find the exact point where a page breaks
+                paragraph_text_on_page = []
+                for run in p.runs:
+                    # Check for hard page breaks or rendered page breaks in the run
+                    has_run_break = any(
+                        br.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type") == "page"
+                        for br in run._element.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}br")
+                    ) or run._element.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}lastRenderedPageBreak")
+
+                    if has_run_break:
+                        page_done = True
+                        break
+                    paragraph_text_on_page.append(run.text)
+                
+                first_page_text = "".join(paragraph_text_on_page).strip()
+                if first_page_text:
+                    first_page.append(first_page_text)
+                
+                # Global fallback limit if no page break is found
+                if len(" ".join(first_page).split()) >= 210:
                     page_done = True
 
             level = 0
@@ -127,7 +154,7 @@ def parse_docx_to_markdown(filepath: str) -> str:
 
         sections.append(current)
 
-        out = summarize(" ".join(first_page), max_sentences=4) + "\n\n"
+        out = summarize("\n".join(first_page), max_sentences=5) + "\n\n"
         out += "HEADINGS\n"
         out += (
             "\n".join(f"{'  ' * (l - 1)}[H{l}] {t}" for l, t in headings)
@@ -155,11 +182,11 @@ def parse_docx_to_markdown(filepath: str) -> str:
                     pass
             yield el, level
 
-    first_page_str = " ".join(
+    first_page_str = "\n".join(
         get_text(el) for el, _ in iter_items(page_only=True) if get_text(el)
     )
-    out = "IMPORTANT CONTEXT (First Page - Top 20%)\n"
-    out += summarize(first_page_str, max_sentences=4) + "\n\n"
+    out = "IMPORTANT CONTEXT\n"
+    out += summarize(first_page_str, max_sentences=5) + "\n\n"
     out += "HEADINGS\n"
 
     headings, sections = [], []

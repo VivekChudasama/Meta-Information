@@ -31,7 +31,6 @@ async def generate_seo_metadata(
         groq_api_key=settings.GROQ_API_KEY,
         temperature=0.45,
         max_retries=3,
-        max_tokens=150,
         model_kwargs={"top_p": 0.9},
     )
 
@@ -48,11 +47,11 @@ async def generate_seo_metadata(
         The Primary Keyword for this blog post is: "{primary_keyword}"
  
         RULES:
-        1. META TITLE (50 to 60 characters):
+        1. META TITLE (50 to 60 characters)
             - Create a descriptive and keyword-rich meta title that highlights the reader's value. 
             - Include the primary keyword naturally.
            
-        2. META DESCRIPTION (150 to 160 characters):
+        2. META DESCRIPTION (150 to 160 characters)
             - Start with a punchy opening sentence that explicitly addresses the user's problem. 
             - Include specific details mentioned in the Blog Content (no filler).
             - Use natural verbs and integrate the primary keyword naturally.
@@ -64,29 +63,29 @@ async def generate_seo_metadata(
             - Each slug must be a descriptive phrase, not a shortened fragment.
 
         4. MANDATORY CONSTRAINTS:
-            - To optimize for Google SEO and ensure rich search snippets, strictly adhere to the ideal character limits: 50–60 characters for titles and 150–160 for meta descriptions.
+            - To optimize for Google SEO and ensure rich search snippets, strictly adhere to the ideal character limits: 50–60 characters for titles and 150–160 for meta descriptions.            
             - ONLY use facts explicitly mentioned in the <document>.
             - Output ONLY valid JSON with no dates, years, or external commentary and no symbols.
             - Read every field aloud before finalizing — if it sounds clipped or robotic, rewrite it.
-        
+            
         <document>
         {content}
         </document>
         """
     )
- 
+
     chain = prompt | structured_llm
- 
+
     try:
         result = await chain.ainvoke(
             {"content": parsed_content, "primary_keyword": primary_keyword}
         )
         return result
-        
+
     except Exception as e:
         print(f"[AI Generator] Error calling LLM: {e}")
         return SEOMetadata(
             meta_title="Generation Error",
             meta_description="Failed to create SEO content because of an API issue.",
-            meta_routes=["error"]
+            meta_routes=["error"],
         )
