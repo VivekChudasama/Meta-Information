@@ -6,6 +6,7 @@ python-docx
 langchain>=0.2.0
 langchain-groq>=0.1.0
 pydantic>=2.0.0
+pydantic-settings>=2.0.0
 python-dotenv>=1.0.1
 sumy
 nltk
