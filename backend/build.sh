@@ -3,6 +3,7 @@
 # pulling in the massive CUDA build that exceeds memory limits.
 
 set -o errexit
+python --version
 
 pip install --upgrade pip
 
