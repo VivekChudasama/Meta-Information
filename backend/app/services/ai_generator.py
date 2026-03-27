@@ -54,9 +54,8 @@ async def generate_seo_metadata(
            
         2. META DESCRIPTION
             - MAX 150-160 characters — count every character including spaces. If over 160, make it shorter.
-            - Open with a sharp, conversational question that mirrors the reader's exact search intent.
-            - Include specific details mentioned in the Blog Content (no filler).
-            - Use natural verbs and integrate the primary keyword naturally.
+            - Open with a punchy opening sentence that explicitly addresses the user's problem.
+            - Use natural verbs , active voice and integrate the primary keyword naturally.
             - Match the search intent of the Blog Content and maintain a Conversational tone (not an ad, no invented claims).
  
         3. META ROUTES (5 slugs):
