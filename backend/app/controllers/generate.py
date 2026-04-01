@@ -6,12 +6,13 @@ from fastapi.concurrency import run_in_threadpool
 from app.services.parser import parse_docx_to_markdown
 from app.services.ai_generator import generate_seo_metadata, SEOMetadata
 
-async def process_metadata_generation(file: UploadFile, primary_keyword: str) -> SEOMetadata:
+async def process_metadata_generation(
+    file: UploadFile, primary_keyword: str
+) -> SEOMetadata:
     """
     Controller logic to handle the flow:
-    1. Upload file to temp
-    2. Parse content
-    3. Generate SEO metadata via LLM
+    1. Upload file to temp and parse content.
+    2. Generate SEO metadata via LLM.
     """
     if not file.filename or not file.filename.endswith(".docx"):
         raise HTTPException(status_code=400, detail="Only .docx files are permitted.")

@@ -4,13 +4,12 @@ from app.services.ai_generator import SEOMetadata
 
 router = APIRouter(tags=["generation"])
 
-
 @router.post("/generate-metadata", response_model=SEOMetadata)
 async def generate_metadata(
-    file: UploadFile = File(...),
-    primary_keyword: str = Form(...)
+    primary_keyword: str = Form(... , description="The main keyword for SEO."),
+    file: UploadFile = File(... , description="The .docx file to parse.")
 ):
     """
-    Receives an uploaded .docx file and orchestrates parsing + metadata generation via the controller.
+    Generate SEO metadata from an uploaded .docx file.
     """
     return await process_metadata_generation(file, primary_keyword)
