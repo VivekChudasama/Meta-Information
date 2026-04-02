@@ -6,8 +6,8 @@ router = APIRouter(tags=["generation"])
 
 @router.post("/generate-metadata", response_model=SEOMetadata)
 async def generate_metadata(
-    primary_keyword: str = Form(... , description="The main keyword for SEO."),
-    file: UploadFile = File(... , description="The .docx file to parse.")
+    primary_keyword: str = Form("", description="The main keyword for SEO."),
+    file: UploadFile = File(..., description="The .docx file to parse.")
 ):
     """
     Generate SEO metadata from an uploaded .docx file.

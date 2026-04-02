@@ -18,12 +18,15 @@ This tool automatically creates optimized SEO titles, descriptions, and URL rout
 
 ### **How It Works**
 1.  **Open Form**: Click the **green block** endpoint: `POST /api/v1/generate-metadata`
-2.  **Activate API**: Select the **'Try it out'** button on the right side.
-3.  **Provide Inputs**:
-    *   **`primary_keyword`** (string) -> The main keyword you want your content to rank for
-    *   **`file`** (file upload) -> Upload your .docx manuscript
-4.  **Execute**: Click the **'Execute'** button below.
-5.  **Finish**: Wait a few seconds, and scroll down to view your AI-generated SEO data!
+2.  **Click to Start**: Select the **'Try it out'** button on the right side.
+3.  **Provide Details**:
+    *   **`primary_keyword`** [Required] -> Enter your main keyword here.
+    *   **`file`** [Required] -> Upload your **.docx** file.
+4.  **Process**: Click the **'Execute'** button below.
+5.  Wait a few seconds, and scroll down to view your results!
+6.  **Result**: Your optimized SEO data will appear in the **Responses** area below for you to easily copy and use.
+
+**Note: Both fields are mandatory for the AI to generate accurate results.**
 
 ---
 
@@ -36,9 +39,10 @@ This tool automatically creates optimized SEO titles, descriptions, and URL rout
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     swagger_ui_parameters={
         "defaultModelsExpandDepth": -1,
-        "docExpansion": "full"
+        "docExpansion": "full",
     },  # Auto-expands the form and hides schemas
 )
+
 
 @app.get("/swagger-custom.css", include_in_schema=False)
 async def swagger_custom_css():
@@ -50,7 +54,8 @@ async def swagger_custom_css():
     .request-url,
     .scheme-container,
     .models,
-    .model-container { display: none !important; }
+    .model-container,
+    .parameter__empty_value_recipient { display: none !important; }
 
     /* Hide the static "Responses" section (200/422 schema table) BEFORE execution */
     .responses-wrapper .responses-inner .responses-table { display: none !important; }
@@ -79,34 +84,12 @@ async def swagger_custom_css():
         box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
     }
 
-    /* Create visual separation for the output area - hidden by default */
-    .responses-wrapper {
-        display: none !important;
-        margin-top: 40px !important;
-        padding: 30px !important;
-        background-color: #f8f9fa !important;
-        border: 2px dashed #2d6a4f !important;
-        border-radius: 12px !important;
-        position: relative !important;
-    }
-
-    /* ONLY show when a live response exists */
-    .responses-wrapper:has(.live-responses-table) {
-        display: block !important;
-    }
-
-    /* Add a clear heading to the results area */
-    .responses-wrapper::before {
-        content: "✨ AI Generated SEO Results";
-        display: block;
-        font-size: 20px;
-        font-weight: bold;
-        color: #1a3c5e;
-        margin-bottom: 15px;
-        text-align: center;
-    }
+    /* ── Pure Cleanup ── */
+    .responses-inner { padding: 0 !important; margin: 0 !important; }
+    .responses-wrapper { padding: 0 !important; margin-top: 10px !important; }
     """
     return Response(content=content, media_type="text/css")
+
 
 # Overriding the default docs route with a custom CSS-injected version
 @app.get("/docs", include_in_schema=False)
@@ -115,7 +98,7 @@ async def overhauled_swagger_ui():
         openapi_url=app.openapi_url,
         title=app.title,
         swagger_ui_parameters=app.swagger_ui_parameters,
-        swagger_css_url="/swagger-custom.css?v=final-separation",
+        swagger_css_url="/swagger-custom.css?v=final-cleanup",
     )
 
 
